@@ -25,3 +25,10 @@ spring:
           batch_size: 100
         order_by:
           default_null_ordering: last
+
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+    default-schema: ${spring.datasource.hikari.schema}
+    baseline-on-migrate: true
+    placeholder-replacement: false
