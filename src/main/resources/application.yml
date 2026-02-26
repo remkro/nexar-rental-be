@@ -2,3 +2,26 @@ server:
   servlet:
     context-path: /api/v1
   port: 8080
+
+spring:
+  mvc:
+    async:
+      request-timeout: 60000
+
+  datasource:
+    hikari:
+      schema: rental
+      minimum-idle: 5
+      maximum-pool-size: 50
+      connection-timeout: 30000
+      auto-commit: true
+      connection-test-query: SELECT 1
+    type: com.zaxxer.hikari.HikariDataSource
+
+  jpa:
+    properties:
+      hibernate:
+        jdbc:
+          batch_size: 100
+        order_by:
+          default_null_ordering: last
