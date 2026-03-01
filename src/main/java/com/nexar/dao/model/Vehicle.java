@@ -1,6 +1,5 @@
-package com.nexar.dao.vehicle;
+package com.nexar.dao.model;
 
-import com.nexar.dao.AbstractEntity;
 import jakarta.persistence.Column;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;

@@ -1,4 +1,4 @@
-package com.nexar.dao;
+package com.nexar.dao.model;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Id;
