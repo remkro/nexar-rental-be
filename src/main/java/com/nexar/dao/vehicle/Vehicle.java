@@ -5,10 +5,12 @@ import jakarta.persistence.Column;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import jakarta.persistence.MappedSuperclass;
-import lombok.*;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 import java.math.BigDecimal;
-
 
 @MappedSuperclass
 @Getter
@@ -27,21 +29,36 @@ public abstract class Vehicle extends AbstractEntity {
 
     private int mileage;
 
+    private int seats;
+
+    @Column(name = "horse_power")
+    private int horsePower;
+
+    @Column(name = "featured_image")
+    private String featuredImage;
+
     @Column(name = "daily_rate")
     private BigDecimal dailyRate;
 
-    @Column(name = "fuel_type")
     @Enumerated(EnumType.STRING)
-    private FuelType fuelType;
+    private Fuel fuel;
+
+    @Enumerated(EnumType.STRING)
+    private Transmission transmission;
 
     @Enumerated(EnumType.STRING)
     private Status status;
 
-    public enum FuelType {
+    public enum Fuel {
         GASOLINE,
         DIESEL,
         ELECTRIC,
         HYBRID
+    }
+
+    public enum Transmission {
+        MANUAL,
+        AUTOMATIC
     }
 
     public enum Status {

@@ -19,13 +19,9 @@ import lombok.Setter;
 @EqualsAndHashCode(callSuper = true)
 public class Car extends Vehicle {
     @Enumerated(EnumType.STRING)
-    @Column(name = "body_type")
-    private BodyType bodyType;
+    private Body body;
 
-    @Enumerated(EnumType.STRING)
-    private TransmissionType transmission;
-
-    public enum BodyType {
+    public enum Body {
         SEDAN,
         COUPE,
         HATCHBACK,
@@ -34,10 +30,5 @@ public class Car extends Vehicle {
         CONVERTIBLE,
         MINIVAN,
         PICKUP_TRUCK
-    }
-
-    public enum TransmissionType {
-        MANUAL,
-        AUTOMATIC
     }
 }
