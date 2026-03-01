@@ -14,21 +14,13 @@ import java.util.UUID;
 @MappedSuperclass
 public abstract class AbstractEntity {
     @Id
-    @Column(
-            updatable = false,
-            nullable = false
-    )
+    @Column(updatable = false, nullable = false)
     private UUID id;
     @Temporal(TemporalType.TIMESTAMP)
-    @Column(
-            name = "creation_timestamp",
-            updatable = false
-    )
+    @Column(name = "creation_timestamp", updatable = false)
     private Date creationTimestamp;
     @Temporal(TemporalType.TIMESTAMP)
-    @Column(
-            name = "modification_timestamp"
-    )
+    @Column(name = "modification_timestamp")
     private Date modificationTimestamp;
 
     public AbstractEntity() {
