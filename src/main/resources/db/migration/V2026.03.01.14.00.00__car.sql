@@ -1,4 +1,4 @@
-CREATE TABLE IF NOT EXISTS cars (
+CREATE TABLE IF NOT EXISTS car (
     id uuid PRIMARY KEY,
     license_plate character varying(50),
     make character varying(100),
