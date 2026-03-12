@@ -2,10 +2,10 @@ package com.nexar.service.user;
 
 import com.nexar.dao.model.user.NexarUser;
 import com.nexar.dao.repository.user.NexarUserRepository;
+import com.nexar.dao.repository.user.SecurityUser;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
-import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -29,7 +29,9 @@ public class NexarUserDetailsService implements UserDetailsService {
                     return new UsernameNotFoundException("User not found for email: " + email);
                 });
 
-        return new User(
+        return new SecurityUser(
+                user.getId(),
+                user.getFirstName() + " " + user.getLastName(),
                 user.getEmail(),
                 user.getPassword(),
                 List.of(new SimpleGrantedAuthority(

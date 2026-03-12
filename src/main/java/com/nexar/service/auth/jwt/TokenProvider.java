@@ -1,12 +1,7 @@
 package com.nexar.service.auth.jwt;
 
-import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.ExpiredJwtException;
-import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.MalformedJwtException;
-import io.jsonwebtoken.SignatureAlgorithm;
-import io.jsonwebtoken.SignatureException;
-import io.jsonwebtoken.UnsupportedJwtException;
+import com.nexar.dao.repository.user.SecurityUser;
+import io.jsonwebtoken.*;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
 import jakarta.annotation.PostConstruct;
@@ -17,7 +12,6 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.User;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 
@@ -117,8 +111,8 @@ public class TokenProvider {
     }
 
     private String extractUserId(Authentication authentication) {
-        if (authentication.getPrincipal() instanceof UserDetails userDetails) {
-            return userDetails.getUsername();
+        if (authentication.getPrincipal() instanceof SecurityUser securityUser) {
+            return securityUser.getUserId().toString();
         }
         return authentication.getName();
     }
