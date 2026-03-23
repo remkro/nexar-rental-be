@@ -2,7 +2,15 @@ package com.nexar.dao.model.user;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.nexar.dao.model.AbstractEntity;
-import jakarta.persistence.*;
+import com.nexar.dao.model.customer.Customer;
+import jakarta.persistence.CascadeType;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.OneToOne;
+import jakarta.persistence.Table;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
@@ -11,8 +19,10 @@ import lombok.EqualsAndHashCode;
 @Entity
 @Table(name = "nexar_user")
 public class NexarUser extends AbstractEntity {
+    @Column(name = "first_name")
     private String firstName;
 
+    @Column(name = "last_name")
     private String lastName;
 
     @Column(name = "email", nullable = false)
@@ -25,6 +35,9 @@ public class NexarUser extends AbstractEntity {
     @Column(name = "nexar_role")
     @Enumerated(EnumType.STRING)
     private NexarRole nexarRole;
+
+    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private Customer customer;
 
     public enum NexarRole {
         REGULAR_CUSTOMER("regular-customer", "Regular Customer", false),
