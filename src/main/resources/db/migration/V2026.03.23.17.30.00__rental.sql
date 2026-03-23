@@ -1,0 +1,22 @@
+CREATE TABLE IF NOT EXISTS rental (
+    id uuid PRIMARY KEY,
+    customer_id uuid,
+    car_id uuid,
+    pickup_date date,
+    return_date date,
+    actual_return_date date,
+    pickup_location character varying(255),
+    return_location character varying(255),
+    status character varying(50) NOT NULL DEFAULT 'PENDING',
+    daily_rate numeric(19, 2),
+    total_days integer,
+    base_amount numeric(19, 2),
+    discount_amount numeric(19, 2),
+    extra_charges numeric(19, 2),
+    total_amount numeric(19, 2),
+    notes text,
+    creation_timestamp timestamp with time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    modification_timestamp timestamp with time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    CONSTRAINT fk_rental_customer FOREIGN KEY (customer_id) REFERENCES customer(id),
+    CONSTRAINT fk_rental_car FOREIGN KEY (car_id) REFERENCES car(id)
+);
