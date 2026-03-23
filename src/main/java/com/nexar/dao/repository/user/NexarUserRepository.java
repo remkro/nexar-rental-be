@@ -9,4 +9,5 @@ import java.util.Optional;
 @Repository
 public interface NexarUserRepository extends AbstractRepository<NexarUser> {
     Optional<NexarUser> findOneByEmailIgnoreCase(String email);
+    boolean existsByEmail(String email);
 }
