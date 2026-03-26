@@ -38,3 +38,8 @@ jwt:
   validity:
     in-seconds: 86400
     in-seconds-for-remember-me: 2592000
+
+
+app:
+  rental:
+    max-active-rentals-per-customer: 3
