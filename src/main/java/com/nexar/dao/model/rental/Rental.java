@@ -11,10 +11,7 @@ import jakarta.persistence.FetchType;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -25,6 +22,7 @@ import java.time.LocalDate;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
+@Builder
 public class Rental extends AbstractEntity {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "customer_id")
@@ -82,5 +80,5 @@ public class Rental extends AbstractEntity {
         return status == RentalStatus.PENDING || status == RentalStatus.CONFIRMED;
     }
 
-    public enum RentalStatus { PENDING, CONFIRMED, ACTIVE, COMPLETED, CANCELLED }
+    public enum RentalStatus { PENDING, CONFIRMED, ACTIVE, COMPLETED, CANCELLED, NO_SHOW }
 }
