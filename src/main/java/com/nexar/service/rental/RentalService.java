@@ -8,16 +8,21 @@ import com.nexar.dao.model.rental.Rental;
 import com.nexar.dao.repository.car.CarRepository;
 import com.nexar.dao.repository.customer.CustomerRepository;
 import com.nexar.dao.repository.rental.RentalRepository;
+import com.nexar.infrastructure.exception.ResourceConflictException;
+import com.nexar.infrastructure.exception.ValidationException;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
+import java.util.List;
 import java.util.UUID;
 
 import static com.nexar.controller.rental.dto.RentalDto.map;
@@ -30,6 +35,9 @@ public class RentalService {
     private final CustomerRepository customerRepository;
     private final CarRepository carRepository;
 
+    @Value("${app.rental.max-active-rentals-per-customer}")
+    private int maxActiveRentals;
+
     @Transactional
     public RentalDto createCarRental(CreateRentalDto dto) {
         String email = SecurityContextHolder.getContext().getAuthentication().getName();
@@ -40,19 +48,26 @@ public class RentalService {
         Car car = carRepository.findByIdWithLock(UUID.fromString(dto.getVehicleId()))
                 .orElseThrow(() -> new EntityNotFoundException("Car not found"));
 
+        validateRentalCreation(customer, car, dto.getPickupDate(), dto.getReturnDate());
 
-        // TODO: implement
-//        validateRentalCreation(customer, car, dto.getPickupDate(), dto.getReturnDate());
+        Rental rental = buildRental(customer, car, dto);
+        rentalRepository.save(rental);
 
-        int days = (int) ChronoUnit.DAYS.between(dto.getPickupDate(), dto.getReturnDate());
+        log.info("Rental created, customer: {}, car: {} {}",
+                customer.getUser().getEmail(), car.getMake(), car.getModel());
+
+        return map(rental);
+    }
+
+    private Rental buildRental(Customer customer, Car car, CreateRentalDto dto) {
+        long days = ChronoUnit.DAYS.between(dto.getPickupDate(), dto.getReturnDate());
         BigDecimal baseAmount = car.getDailyRate().multiply(BigDecimal.valueOf(days));
 
-        // TODO: implement
-//        BigDecimal discount = calculateDiscount(customer, days, baseAmount);
+        // TODO: implement discount calculation
         BigDecimal discount = BigDecimal.ZERO;
         BigDecimal total = baseAmount.subtract(discount).setScale(2, RoundingMode.HALF_UP);
 
-        Rental rental = rentalRepository.save(Rental.builder()
+        return Rental.builder()
                 .customer(customer)
                 .car(car)
                 .pickupDate(dto.getPickupDate())
@@ -61,53 +76,57 @@ public class RentalService {
                 .returnLocation(dto.getReturnLocation())
                 .status(Rental.RentalStatus.PENDING)
                 .dailyRate(car.getDailyRate())
-                .totalDays(days)
+                .totalDays((int) days)
                 .baseAmount(baseAmount)
                 .discountAmount(discount)
                 .extraCharges(BigDecimal.ZERO)
                 .totalAmount(total)
                 .notes(dto.getNotes())
-                .build());
-
-        log.info("Rental created, customer: {}, car: {}",
-                customer.getUser().getEmail(), car.getMake() + " " + car.getModel());
-
-        return map(rental);
+                .build();
     }
 
+    private void validateRentalCreation(Customer customer, Car car, LocalDate pickup, LocalDate returnDate) {
+        if (customer.isBlacklisted()) {
+            throw new ValidationException("Account is suspended");
+        }
 
-    //TODO: implement
-//    private void validateRentalCreation(Customer customer, Car car, LocalDate pickup, LocalDate returnDate) {
-//        if (customer.isBlacklisted()) {
-//            throw new BusinessException("Account is suspended.");
-//        }
-//        if (!car.isAvailable()) {
-//            throw new BusinessException("Car is not available for rental");
-//        }
-//        if (returnDate.isBefore(pickup) || returnDate.isEqual(pickup)) {
-//            throw new BusinessException("Return date must be after pickup date");
-//        }
-//        if (pickup.isBefore(LocalDate.now())) {
-//            throw new BusinessException("Pickup date cannot be in the past");
-//        }
-//
-//        long active = rentalRepository.countActiveRentalsByCustomer(customer.getId());
-//        if (active >= maxActiveRentals) {
-//            throw new BusinessException("Maximum active rentals (" + maxActiveRentals + ") reached");
-//        }
-//
-//        List<Rental> conflicts = rentalRepository.findByCarIdAndStatusNotIn(
-//                car.getId(),
-//                List.of(Rental.RentalStatus.CANCELLED, Rental.RentalStatus.COMPLETED, RentalStatus.NO_SHOW)
-//        );
-//
-//        boolean hasConflict = conflicts
-//                .stream()
-//                .anyMatch(rental ->
-//                rental.getPickupDate().isBefore(returnDate) && rental.getReturnDate().isAfter(pickup));
-//
-//        if (hasConflict) {
-//            throw new BusinessException("Car is already booked for the selected period");
-//        }
-//    }
+        validateDates(pickup, returnDate);
+
+        if (!car.isAvailable()) {
+            throw new ResourceConflictException("Car is not available for rental");
+        }
+
+        long activeRentals = rentalRepository.countActiveRentalsByCustomer(customer.getId());
+        if (activeRentals >= maxActiveRentals) {
+            throw new ValidationException("Maximum active rentals (" + maxActiveRentals + ") reached");
+        }
+
+        validateNoBookingConflict(car.getId(), pickup, returnDate);
+    }
+
+    private void validateDates(LocalDate pickup, LocalDate returnDate) {
+        if (pickup.isBefore(LocalDate.now())) {
+            throw new ValidationException("Pickup date cannot be in the past");
+        }
+        if (!returnDate.isAfter(pickup)) {
+            throw new ValidationException("Return date must be after pickup date");
+        }
+    }
+
+    private void validateNoBookingConflict(UUID carId, LocalDate pickup, LocalDate returnDate) {
+        var statuses = List.of(
+                Rental.RentalStatus.CANCELLED,
+                Rental.RentalStatus.COMPLETED,
+                Rental.RentalStatus.NO_SHOW
+        );
+
+        boolean hasConflict = rentalRepository
+                .findByCarIdAndStatusNotIn(carId, statuses)
+                .stream()
+                .anyMatch(rental -> rental.getPickupDate().isBefore(returnDate) && rental.getReturnDate().isAfter(pickup));
+
+        if (hasConflict) {
+            throw new ResourceConflictException("Car is already booked for the selected period");
+        }
+    }
 }

@@ -80,5 +80,5 @@ public class Rental extends AbstractEntity {
         return status == RentalStatus.PENDING || status == RentalStatus.CONFIRMED;
     }
 
-    public enum RentalStatus { PENDING, CONFIRMED, ACTIVE, COMPLETED, CANCELLED }
+    public enum RentalStatus { PENDING, CONFIRMED, ACTIVE, COMPLETED, CANCELLED, NO_SHOW }
 }

@@ -1,4 +1,4 @@
-package com.nexar.config;
+package com.nexar.infrastructure.config;
 
 import com.nexar.service.auth.jwt.JWTConfigurer;
 import com.nexar.service.auth.jwt.TokenProvider;
