@@ -39,7 +39,15 @@ jwt:
     in-seconds: 86400
     in-seconds-for-remember-me: 2592000
 
+mailersend:
+  token: ${MAILERSEND_TOKEN}
+  sender-email: ${MAILERSEND_SENDER_EMAIL:contact@nexarrental.com}
+  sender-name: ${MAILERSEND_SENDER_NAME:Nexar Rental}
+  welcome-message-template-id: ${MAILERSEND_WELCOME_TEMPLATE_ID:123}
 
 app:
   rental:
-    max-active-rentals-per-customer: 3
+    max-active-rentals-per-customer: ${APP_MAX_ACTIVE_RENTALS:3}
+  email:
+    welcome-message:
+      enabled: ${APP_EMAIL_WELCOME_ENABLED:true}
